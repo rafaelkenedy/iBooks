@@ -1,0 +1,10 @@
+package com.rafael.ibooks.domain
+
+data class Book(
+    val title: String,
+    val author: String,
+    val pageCount: Int,
+    val publisher: String,
+    val publishedYear: Int,
+    val imageUrl: String
+)

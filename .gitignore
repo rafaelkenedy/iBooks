@@ -1,0 +1,95 @@
+# Android Studio & IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Gradle
+.gradle/
+**/build/
+**/bin/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+
+# Local Configuration
+local.properties
+*.keystore
+*.jks
+
+# Kotlin
+*.kotlin_module
+
+# Jetpack Compose preview cache
+**/.compose-cache/
+
+# Log/Crash Files
+*.log
+
+# Android OS generated files
+*.apk
+*.ap_
+*.aab
+
+# NDK
+obj/
+
+# JetBrains Rider
+.idea/
+*.sln
+*.csproj
+*.userprefs
+
+# Environment
+.env
+.env.local
+
+# Caches
+.cxx/
+build/
+captures/
+.externalNativeBuild/
+
+# Testing
+*.ec
+coverage/
+test-results/
+test-report/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.orig
+*.rej
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Firebase Crashlytics
+crashlytics-build.properties
+
+# Android Annotations
+.apt_generated/
+
+# VS Code
+.vscode/
+
+# System Files
+*.swp
+*.swo
+*.tmp
+
+# Lint
+lint/intermediates/
+lint/generated/
+
+# Compose Multiplatform (se usar)
+composeApp/build/
+
+# Kotlin Symbol Processing (KSP)
+.ksp/
+
+# Koin or Hilt generated code
+**/generated/
