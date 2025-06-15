@@ -37,6 +37,7 @@ fun BookSearchBar(
     ) {
         SearchBar(
             modifier = modifier,
+
             expanded = expanded,
             onExpandedChange = { expanded = it },
             inputField = {

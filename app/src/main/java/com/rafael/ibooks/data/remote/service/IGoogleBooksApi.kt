@@ -15,14 +15,6 @@ interface IGoogleBooksApi {
         @Query("startIndex") startIndex: Int
     ): BooksResponse
 
-    @GET("volumes")
-    suspend fun getRecentBooks(
-        @Query("q") query: String = "*",
-        @Query("orderBy") orderBy: String = "newest",
-        @Query("maxResults") maxResults: Int,
-        @Query("startIndex") startIndex: Int
-    ): BooksResponse
-
     @GET("volumes/{id}")
     suspend fun getBookById(
         @Path("id") id: String

@@ -6,7 +6,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val presentationModule = module {
-    viewModel { BookListViewModel(searchBooksUseCase = get(), getRecentBooksUseCase = get()) }
-    viewModel { BookDetailViewModel(get()) }
 
+    viewModel { BookListViewModel(get(), get()) }
+    viewModel { BookDetailViewModel(get()) }
 }
