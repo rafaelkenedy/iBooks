@@ -2,6 +2,8 @@ package com.rafael.ibooks.ui.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rafael.ibooks.R
@@ -40,11 +43,14 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun BookListItem(
     book: Book,
+    onItemClick: (Book) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
+            .clickable { onItemClick(book) }
     ) {
         Row(
             modifier = Modifier
@@ -54,8 +60,8 @@ fun BookListItem(
         ) {
             Box(
                 modifier = Modifier
-                    .height(94.dp)
-                    .width(64.dp)
+                    .height(100.dp)
+                    .width(68.dp)
                     .clip(RoundedCornerShape((8.dp)))
             ) {
                 GlideImage(
@@ -80,20 +86,37 @@ fun BookListItem(
 
                 )
             }
-            Column(
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                    .fillMaxWidth()
+                    .height(100.dp)
             ) {
-                Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.displaySmall
-                )
-                Text(
-                    text = book.author,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(Modifier.width(16.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp, end = 8.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = book.title,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.displaySmall
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "${book.publishedYear}",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = book.author,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
 
             }
         }
@@ -107,7 +130,8 @@ fun BookListItemPreview() {
 
     IBooksTheme {
         BookListItem(
-            book = BooksRepository.books.first()
+            book = BooksRepository.getBooks().first(),
+            onItemClick = {}
         )
     }
 }

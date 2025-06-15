@@ -36,7 +36,13 @@ data class VolumeInfo(
     val description: String?,
 
     @SerializedName("imageLinks")
-    val imageLinks: ImageLinks?
+    val imageLinks: ImageLinks?,
+
+    @SerializedName("averageRating")
+    val averageRating: Double?,
+
+    @SerializedName("ratingsCount")
+    val ratingsCount: Int?
 ) {
     val publishedYear: Int?
         get() = try {
@@ -46,11 +52,30 @@ data class VolumeInfo(
         }
 
     val thumbnailSafe: String
-        get() = imageLinks?.thumbnail
+        get() = imageLinks?.extraLarge
+            ?: imageLinks?.large
+            ?: imageLinks?.medium
+            ?: imageLinks?.thumbnail
             ?: "https://placehold.co/128x188?text=&font=cabin"
 }
 
 data class ImageLinks(
+
+    @SerializedName("smallThumbnail")
+    val smallThumbnail: String?,
+
     @SerializedName("thumbnail")
-    val thumbnail: String?
+    val thumbnail: String?,
+
+    @SerializedName("small")
+    val small: String?,
+
+    @SerializedName("medium")
+    val medium: String?,
+
+    @SerializedName("large")
+    val large: String?,
+
+    @SerializedName("extraLarge")
+    val extraLarge: String?
 )

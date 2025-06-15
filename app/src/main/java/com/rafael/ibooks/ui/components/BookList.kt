@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,7 +29,9 @@ import com.rafael.ibooks.utils.BOOK_LIST
 fun BookList(
     books: List<Book>,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    listState: LazyListState,
+    onItemClick: (book: Book) -> Unit
 ) {
     val visibleState = remember {
         MutableTransitionState(false).apply {
@@ -44,10 +47,11 @@ fun BookList(
         exit = fadeOut(),
         modifier = modifier
     ) {
-        LazyColumn(contentPadding = contentPadding) {
+        LazyColumn(contentPadding = contentPadding, state = listState) {
             itemsIndexed(books) { index, book ->
                 BookListItem(
                     book = book,
+                    onItemClick = onItemClick,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .animateEnterExit(
@@ -72,7 +76,7 @@ fun BookListPreview() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            BookList(books = BooksRepository.books)
+            BookList(books = BooksRepository.getBooks(), onItemClick = { }, listState = LazyListState())
         }
     }
 

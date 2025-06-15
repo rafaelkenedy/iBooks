@@ -6,12 +6,16 @@ import com.rafael.ibooks.domain.Book
 fun BookItem.toDomain(): Book {
     val volume = this.volumeInfo
     return Book(
+        id = this.id,
         title = volume.title ?: "Título desconhecido",
         author = volume.authors?.joinToString(", ") ?: "Autor desconhecido",
         pageCount = volume.pageCount ?: 0,
         publisher = volume.publisher ?: "Editora desconhecida",
         publishedYear = volume.publishedYear ?: 0,
-        imageUrl = volume.thumbnailSafe
+        imageUrl = volume.thumbnailSafe,
+        description = volume.description ?: "",
+        rating = volume.averageRating,
+        ratingCount = volume.ratingsCount
     )
 }
 

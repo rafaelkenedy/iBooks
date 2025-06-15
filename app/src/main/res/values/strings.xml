@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">iBooks</string>
     <string name="image_error">Erro ao carregar imagem.</string>
+    <string name="neutral_message">Use a barra de pesquisa para encontrar livros.</string>
+    <string name="details">Detalhes do Livro</string>
+    <string name="back">Voltar</string>
+    <string name="empty_search_results">A busca não retornou livros</string>
 </resources>

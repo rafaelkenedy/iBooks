@@ -1,24 +1,30 @@
 package com.rafael.ibooks.data.remote.service
 
+import com.rafael.ibooks.data.remote.model.BookItem
 import com.rafael.ibooks.data.remote.model.BooksResponse
-import retrofit2.Call
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface IGoogleBooksApi {
-
     @GET("volumes")
-    fun searchBooks(
+    suspend fun getBooks(
         @Query("q") query: String,
-        @Query("maxResults") maxResults: Int = 10,
-        @Query("startIndex") startIndex: Int = 0
-    ): Call<BooksResponse>
+        @Query("orderBy") orderBy: String? = null,
+        @Query("maxResults") maxResults: Int,
+        @Query("startIndex") startIndex: Int
+    ): BooksResponse
 
     @GET("volumes")
-    fun getRecentBooks(
+    suspend fun getRecentBooks(
         @Query("q") query: String = "*",
         @Query("orderBy") orderBy: String = "newest",
-        @Query("maxResults") maxResults: Int = 10,
-        @Query("startIndex") startIndex: Int = 0
-    ): Call<BooksResponse>
+        @Query("maxResults") maxResults: Int,
+        @Query("startIndex") startIndex: Int
+    ): BooksResponse
+
+    @GET("volumes/{id}")
+    suspend fun getBookById(
+        @Path("id") id: String
+    ): BookItem
 }

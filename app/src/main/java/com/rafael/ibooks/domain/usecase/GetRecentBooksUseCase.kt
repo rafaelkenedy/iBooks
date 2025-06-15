@@ -6,7 +6,12 @@ import com.rafael.ibooks.domain.repository.IBookRepository
 class GetRecentBooksUseCase(
     private val repository: IBookRepository
 ) {
-    suspend operator fun invoke(): List<Book> {
-        return repository.getRecentBooks()
+    suspend operator fun invoke(startIndex: Int, maxResults: Int): List<Book> {
+        return repository.getBooks(
+            query = "*",
+            orderBy = "newest",
+            startIndex = startIndex,
+            maxResults = maxResults
+        )
     }
 }

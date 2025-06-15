@@ -1,8 +1,9 @@
 package com.rafael.ibooks.data.remote.datasource
 
+import com.rafael.ibooks.data.remote.model.BookItem
 import com.rafael.ibooks.data.remote.model.BooksResponse
 
 interface IBookRemoteDataSource {
-    suspend fun searchBooks(query: String, maxResults: Int = 10, startIndex: Int = 0): BooksResponse
-    suspend fun getRecentBooks(): BooksResponse
+    suspend fun getBooks(query: String, orderBy: String?, maxResults: Int, startIndex: Int): BooksResponse
+    suspend fun getBookDetails(id: String): BookItem
 }
