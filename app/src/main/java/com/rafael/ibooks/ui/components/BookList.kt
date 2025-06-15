@@ -49,7 +49,7 @@ fun BookList(
                 BookListItem(
                     book = book,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(vertical = 8.dp)
                         .animateEnterExit(
                             enter = slideInVertically(
                                 animationSpec = spring(

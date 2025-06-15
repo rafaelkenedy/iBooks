@@ -1,9 +1,13 @@
 package com.rafael.ibooks.presentation.viewmodel.screens
 
+//import com.rafael.ibooks.ui.components.TopAppBar
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -23,7 +27,7 @@ import com.rafael.ibooks.presentation.state.ViewState
 import com.rafael.ibooks.presentation.viewmodel.BookListViewModel
 import com.rafael.ibooks.ui.components.BookList
 import com.rafael.ibooks.ui.components.BookSearchBar
-import com.rafael.ibooks.ui.components.TopAppBar
+import com.rafael.ibooks.ui.components.IBookTopAppBar
 import com.rafael.ibooks.ui.theme.IBooksTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -48,63 +52,73 @@ fun BookListScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopAppBar() }
-    ) {
-
-        Box(modifier = Modifier.padding(it)) {
-            Column {
-                BookSearchBar(
-                    query = searchText,
-                    onQueryChange = { q -> searchText = q },
-                    onSearch = {
-                        if (searchText.isNotBlank()) {
-                            viewModel.searchBooks(searchText)
-                        }
-                    },
-                    searchResults = suggestions,
+        //topBar = { TopAppBar() }
+        topBar = { IBookTopAppBar() },
+        content = {
+            Box(modifier = Modifier.padding(it)) {
+                Column (
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 16.dp, end = 16.dp)
-                )
-                when (viewState) {
-                    is ViewState.Loading -> {
-                        IBooksTheme {
-                            SplashScreen { Unit }
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ){
+                    BookSearchBar(
+                        query = searchText,
+                        onQueryChange = { q -> searchText = q },
+                        onSearch = {
+                            if (searchText.isNotBlank()) {
+                                viewModel.searchBooks(searchText)
+                            }
+                        },
+                        searchResults = suggestions,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    when (viewState) {
+                        is ViewState.Loading -> {
+                            IBooksTheme {
+                                SplashScreen { Unit }
+                            }
                         }
-                    }
 
-                    is ViewState.Success -> {
-                        val books = (viewState as ViewState.Success).data
-                        BookList(books = books, contentPadding = it)
-                    }
-
-                    is ViewState.Error -> {
-                        val error = (viewState as ViewState.Error).throwable.message
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(it),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = error.orEmpty(), color = MaterialTheme.colorScheme.error)
+                        is ViewState.Success -> {
+                            val books = (viewState as ViewState.Success).data
+                            BookList(books = books, contentPadding = PaddingValues(0.dp))
                         }
-                    }
 
-                    ViewState.Neutral -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(it),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Busque por um livro.")
+                        is ViewState.Error -> {
+                            val error = (viewState as ViewState.Error).throwable.message
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(it),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = error.orEmpty(),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
-                    }
 
+                        ViewState.Neutral -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(it),
+                                contentAlignment = Alignment.Center
+                            ) {
+                            }
+                        }
+
+                    }
                 }
             }
         }
-    }
+    )
 }
 
 @Preview(showBackground = true)

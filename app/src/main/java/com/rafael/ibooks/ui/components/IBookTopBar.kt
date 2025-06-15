@@ -11,14 +11,13 @@ import com.rafael.ibooks.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(modifier: Modifier = Modifier) {
+fun IBookTopAppBar(modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
         title = {
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayLarge
             )
-        },
-        modifier = modifier
+        }
     )
 }
