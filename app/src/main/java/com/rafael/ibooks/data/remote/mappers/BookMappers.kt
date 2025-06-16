@@ -18,7 +18,8 @@ fun BookItem.toDomain(): Book {
         imageUrl = volume.thumbnailSafe,
         description = volume.description ?: "",
         rating = volume.averageRating,
-        ratingCount = volume.ratingsCount
+        ratingCount = volume.ratingsCount,
+        genres = volume.categories ?: emptyList()
     )
 }
 

@@ -1,12 +1,25 @@
 package com.rafael.ibooks.commons.events
 
-data class DialogAction(
-    val text: String,
-    val execute: () -> Unit
-)
-
 sealed class ErrorEvent {
-    data object NetworkError : ErrorEvent()
-    data class HttpError(val code: Int, val message: String? = null) : ErrorEvent()
-    data class UnknownError(val throwable: Throwable) : ErrorEvent()
+
+    abstract val retryAction: () -> Unit
+    abstract val onDismiss: () -> Unit
+
+    data class NetworkError(
+        override val retryAction: () -> Unit,
+        override val onDismiss: () -> Unit
+    ) : ErrorEvent()
+
+    data class HttpError(
+        val code: Int,
+        val message: String? = null,
+        override val retryAction: () -> Unit,
+        override val onDismiss: () -> Unit
+    ) : ErrorEvent()
+
+    data class UnknownError(
+        val throwable: Throwable,
+        override val retryAction: () -> Unit,
+        override val onDismiss: () -> Unit
+    ) : ErrorEvent()
 }

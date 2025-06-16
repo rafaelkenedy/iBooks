@@ -31,7 +31,8 @@ fun BookList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     listState: LazyListState,
-    onItemClick: (book: Book) -> Unit
+    onItemClick: (book: Book) -> Unit,
+    bottomContent: (@Composable () -> Unit)? = null
 ) {
     val visibleState = remember {
         MutableTransitionState(false).apply {
@@ -65,6 +66,12 @@ fun BookList(
                         )
                 )
             }
+            bottomContent?.let {
+                item {
+                    it()
+                }
+            }
+
         }
     }
 }
@@ -76,7 +83,11 @@ fun BookListPreview() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            BookList(books = BooksRepository.getBooks(), onItemClick = { }, listState = LazyListState())
+            BookList(
+                books = BooksRepository.getBooks(),
+                onItemClick = { },
+                listState = LazyListState()
+            )
         }
     }
 

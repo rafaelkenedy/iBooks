@@ -15,4 +15,16 @@
     <string name="unknown_error">Um erro aconteceu ao buscar livros, verificação a sua conexão de internet!</string>
     <string name="ok">OK</string>
     <string name="error_try_again">Tentar novamente</string>
+    <string name="up">Voltar ao topo</string>
+    <string name="network_error">Falha na conexão. Verifique sua internet e tente novamente.</string>
+    <string name="connection_error">Não foi possível conectar ao servidor (Código: ${event.code}). Por favor, tente novamente mais tarde.</string>
+    <string name="generic_error">Um erro inesperado aconteceu. Por favor, tente novamente.</string>
+    <string name="error">Ocorreu um Erro</string>
+    <string name="want_to_read">Quero Ler</string>
+    <string name="no_description_available">Nenhuma descrição disponível</string>
+    <string name="share">Compartilhar</string>
+    <string name="book_description">Descrição do Livro</string>
+    <string name="erro_loading_img">Erro ao carregar imagem</string>
+    <string name="book_saved_to_favorites">"%1$s foi salvo nos seus favoritos!"</string>
+    <string name="share_book_with">Compartilhar livro com…</string>
 </resources>

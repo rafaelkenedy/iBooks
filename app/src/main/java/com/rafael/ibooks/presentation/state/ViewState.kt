@@ -1,12 +1,15 @@
 package com.rafael.ibooks.presentation.state
 
-sealed class ViewState<out T> {
-    data object Neutral : ViewState<Nothing>()
-    data object Loading : ViewState<Nothing>()
+sealed class DataState<out T> {
     data class Success<T>(
         val data: T,
-        val isLoadingMore: Boolean = false,
         val endReached: Boolean = false
-    ) : ViewState<T>()
-    data class Error(val throwable: Throwable) : ViewState<Nothing>()
+    ) : DataState<T>()
+
+    data class Error(val throwable: Throwable) : DataState<Nothing>()
+}
+
+sealed class DetailDataState<out T> {
+    data class Success<T>(val data: T) : DetailDataState<T>()
+    data class Error(val throwable: Throwable) : DetailDataState<Nothing>()
 }

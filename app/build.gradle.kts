@@ -89,4 +89,5 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
     implementation(libs.navigation.compose)
+    implementation(libs.androidx.material.icons.extended)
 }

@@ -42,7 +42,10 @@ data class VolumeInfo(
     val averageRating: Double?,
 
     @SerializedName("ratingsCount")
-    val ratingsCount: Int?
+    val ratingsCount: Int?,
+
+    @SerializedName("categories")
+    val categories: List<String>?
 ) {
     val publishedYear: Int?
         get() = try {
@@ -57,6 +60,7 @@ data class VolumeInfo(
             ?: imageLinks?.medium
             ?: imageLinks?.thumbnail
             ?: "https://placehold.co/128x188?text=&font=cabin"
+
 }
 
 data class ImageLinks(

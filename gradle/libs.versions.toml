@@ -38,6 +38,7 @@ retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", ver
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

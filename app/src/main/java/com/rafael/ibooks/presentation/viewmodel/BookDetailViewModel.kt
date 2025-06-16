@@ -1,34 +1,35 @@
 package com.rafael.ibooks.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.rafael.ibooks.commons.base.BaseViewModel
 import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.domain.usecase.GetBookDetailsUseCase
-import com.rafael.ibooks.presentation.state.ViewState
-import com.rafael.ibooks.presentation.state.emitError
-import com.rafael.ibooks.presentation.state.emitLoading
-import com.rafael.ibooks.presentation.state.emitSuccess
+import com.rafael.ibooks.presentation.state.DetailDataState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
+
+data class BookDetailScreenState(
+    val detailDataState: DetailDataState<Book>? = null
+)
 
 class BookDetailViewModel(
     private val getBookDetailsUseCase: GetBookDetailsUseCase
-) : ViewModel() {
+) : BaseViewModel() {
 
-    private val _bookDetailViewState = MutableStateFlow<ViewState<Book>>(ViewState.Neutral)
-    val bookDetailViewState: StateFlow<ViewState<Book>> = _bookDetailViewState.asStateFlow()
+    private val _screenState = MutableStateFlow(BookDetailScreenState())
+    val screenState: StateFlow<BookDetailScreenState> = _screenState.asStateFlow()
 
     fun loadBookDetails(bookId: String) {
-        viewModelScope.launch {
-            _bookDetailViewState.emitLoading()
-            try {
-                val book = getBookDetailsUseCase(bookId)
-                _bookDetailViewState.emitSuccess(book)
-            } catch (e: Exception) {
-                _bookDetailViewState.emitError(e)
+        launch(
+            retryAction = { loadBookDetails(bookId) },
+            onError = { error ->
+                _screenState.update { it.copy(detailDataState = DetailDataState.Error(error)) }
+                sendActionableErrorEvent(error, retryAction = { loadBookDetails(bookId) })
             }
+        ) {
+            val book = getBookDetailsUseCase(bookId)
+            _screenState.update { it.copy(detailDataState = DetailDataState.Success(book)) }
         }
     }
 }

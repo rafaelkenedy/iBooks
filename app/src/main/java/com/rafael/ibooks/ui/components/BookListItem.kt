@@ -128,7 +128,9 @@ fun BookListItem(
 @Composable
 fun BookListItemPreview() {
 
-    IBooksTheme {
+    IBooksTheme(
+        dynamicColor = false
+    ) {
         BookListItem(
             book = BooksRepository.getBooks().first(),
             onItemClick = {}

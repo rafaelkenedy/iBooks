@@ -1,6 +1,6 @@
 package com.rafael.ibooks.commons.events
 
 sealed class LoadingEvent {
-    object Show : LoadingEvent()
-    object Hide : LoadingEvent()
+    data object Show : LoadingEvent()
+    data object Hide : LoadingEvent()
 }

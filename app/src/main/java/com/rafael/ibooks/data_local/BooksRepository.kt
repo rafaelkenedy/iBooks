@@ -18,6 +18,7 @@ object BooksRepository {
                     description = "",
                     rating = 4.2,
                     ratingCount = 5,
+                    genres = emptyList()
                 )
             )
         }

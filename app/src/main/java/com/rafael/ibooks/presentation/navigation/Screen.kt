@@ -2,6 +2,6 @@ package com.rafael.ibooks.presentation.navigation
 
 
 sealed class Screen(val route: String) {
-    object BookList : Screen("book_list")
-    object BookDetail : Screen("book_detail")
+    data object BookList : Screen("book_list")
+    data object BookDetail : Screen("book_detail")
 }
