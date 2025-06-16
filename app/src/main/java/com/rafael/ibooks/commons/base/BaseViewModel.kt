@@ -2,18 +2,14 @@ package com.rafael.ibooks.commons.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-
-
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
 import kotlinx.coroutines.CoroutineScope
-
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.net.UnknownHostException
-
 
 abstract class BaseViewModel : ViewModel() {
 
@@ -60,20 +56,15 @@ abstract class BaseViewModel : ViewModel() {
 
         val event = when (error) {
             is UnknownHostException -> ErrorEvent.NetworkError(
-                retryAction = safeRetryAction,
-                onDismiss = dismissAction
+                retryAction = safeRetryAction, onDismiss = dismissAction
             )
 
             is HttpException -> ErrorEvent.HttpError(
-                code = error.code(),
-                retryAction = safeRetryAction,
-                onDismiss = dismissAction
+                code = error.code(), retryAction = safeRetryAction, onDismiss = dismissAction
             )
 
             else -> ErrorEvent.UnknownError(
-                throwable = error,
-                retryAction = safeRetryAction,
-                onDismiss = dismissAction
+                throwable = error, retryAction = safeRetryAction, onDismiss = dismissAction
             )
         }
         errorEventChannel.send(event)

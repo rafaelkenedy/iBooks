@@ -146,7 +146,7 @@ private fun shareBook(context: Context, book: Book) {
         action = Intent.ACTION_SEND
         putExtra(
             Intent.EXTRA_TEXT,
-            "Confira o livro '${book.title}' de ${book.author}! ${book.imageUrl}"
+            "Confira o livro '${book.title}' de ${book.author}! ${book.description}"
         )
         type = "text/plain"
     }
