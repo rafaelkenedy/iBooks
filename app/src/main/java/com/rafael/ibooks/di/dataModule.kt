@@ -18,6 +18,16 @@ val dataModule = module {
 
     single {
         OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val originalUrl = chain.request().url
+                val newUrl = originalUrl.newBuilder()
+                    .addQueryParameter("key", BuildConfig.GOOGLE_BOOKS_API_KEY)
+                    .build()
+                val newRequest = chain.request().newBuilder()
+                    .url(newUrl)
+                    .build()
+                chain.proceed(newRequest)
+            }
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level =
                     if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
@@ -37,6 +47,5 @@ val dataModule = module {
     }
 
     single<IBookRemoteDataSource> { BookRemoteDatasourceImpl(get()) }
-    single<IBookRepository> { BookRepositoryImpl(get()) }
     single<IBookRepository> { BookRepositoryImpl(get()) }
 }

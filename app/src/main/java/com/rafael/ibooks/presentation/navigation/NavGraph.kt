@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.rafael.ibooks.presentation.screens.BookDetailScreen
-import com.rafael.ibooks.presentation.viewmodel.screens.BookListScreen
+import com.rafael.ibooks.presentation.screens.BookListScreen
 
 @Composable
 fun IBooksNavGraph() {

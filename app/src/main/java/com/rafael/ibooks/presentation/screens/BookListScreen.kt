@@ -1,4 +1,4 @@
-package com.rafael.ibooks.presentation.viewmodel.screens
+package com.rafael.ibooks.presentation.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,11 +22,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,9 +36,12 @@ import com.rafael.ibooks.presentation.viewmodel.BookListViewModel
 import com.rafael.ibooks.ui.components.BookList
 import com.rafael.ibooks.ui.components.BookSearchBar
 import com.rafael.ibooks.ui.components.BookTopAppBar
+import com.rafael.ibooks.ui.components.ErrorDialog // Import necessário
+import com.rafael.ibooks.ui.components.GenreChips
 import com.rafael.ibooks.ui.components.LoadingIndicator
 import com.rafael.ibooks.ui.theme.IBooksTheme
 import com.rafael.ibooks.utils.DEFAULT_SEARCH_SUGGESTIONS
+import com.rafael.ibooks.utils.GENRE_MAP
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -51,8 +50,8 @@ fun BookListScreen(
     viewModel: BookListViewModel = koinViewModel(),
     onBookClick: (book: Book) -> Unit
 ) {
-    val viewState by viewModel.bookListViewState.collectAsState()
-    var searchText by rememberSaveable { mutableStateOf("") }
+    val screenState by viewModel.screenState.collectAsState()
+    android.util.Log.d("UIState", "Recompondo com errorToShow: ${screenState.errorToShow}")
     val suggestions = DEFAULT_SEARCH_SUGGESTIONS
 
     val listState = rememberLazyListState()
@@ -82,6 +81,13 @@ fun BookListScreen(
         if (isAtBottom) {
             viewModel.loadNextPage()
         }
+    }
+
+    screenState.errorToShow?.let { error ->
+        ErrorDialog(
+            error = error,
+            onDismiss = viewModel::onErrorDialogDismissed
+        )
     }
 
     Scaffold(
@@ -115,20 +121,24 @@ fun BookListScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 BookSearchBar(
-                    query = searchText,
-                    onQueryChange = { q -> searchText = q },
-                    onSearch = {
-                        viewModel.searchBooks(searchText.ifBlank { null })
-                    },
+                    query = screenState.searchText,
+                    onQueryChange = viewModel::onQueryChange,
+                    onSearch = viewModel::onSearch,
                     searchResults = suggestions,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 )
 
+                GenreChips(
+                    genres = GENRE_MAP.keys.toList(),
+                    selectedGenre = screenState.selectedGenre,
+                    onGenreSelected = viewModel::onGenreSelected
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
-                when (val state = viewState) {
+                when (val state = screenState.booksState) {
                     is ViewState.Loading -> {
                         LoadingIndicator()
                     }
@@ -154,12 +164,11 @@ fun BookListScreen(
                     }
 
                     is ViewState.Error -> {
-                        val error = state.throwable.message
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = error.orEmpty(), color = MaterialTheme.colorScheme.error)
+                            Text(text = stringResource(R.string.error_try_again))
                         }
                     }
 
@@ -172,7 +181,6 @@ fun BookListScreen(
                             Text(stringResource(R.string.neutral_message))
                         }
                     }
-
                 }
             }
         }

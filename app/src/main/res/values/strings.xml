@@ -5,4 +5,14 @@
     <string name="details">Detalhes do Livro</string>
     <string name="back">Voltar</string>
     <string name="empty_search_results">A busca não retornou livros</string>
+    <string name="search_books">Buscar livros...</string>
+    <string name="search_icon">Ícone de Busca</string>
+    <string name="clear">Limpar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="back_icon">Ícone de voltar</string>
+    <string name="leading_icon_animation">leadingIconAnimation</string>
+    <string name="dialog_error_title">Ocorreu um erro!</string>
+    <string name="unknown_error">Um erro aconteceu ao buscar livros, verificação a sua conexão de internet!</string>
+    <string name="ok">OK</string>
+    <string name="error_try_again">Tentar novamente</string>
 </resources>

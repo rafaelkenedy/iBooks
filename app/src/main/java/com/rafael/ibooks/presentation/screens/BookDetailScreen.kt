@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.presentation.state.ViewState
 import com.rafael.ibooks.presentation.viewmodel.BookDetailViewModel
 import com.rafael.ibooks.ui.components.BookDetailContent
@@ -38,25 +37,33 @@ fun BookDetailScreen(
         }
     ) { paddingValues ->
 
-        when (viewState) {
-            is ViewState.Loading -> LoadingIndicator()
-            is ViewState.Success -> {
-                val book = (viewState as ViewState.Success<Book>).data
-                BookDetailContent(book = book)
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (val state = viewState) {
+                ViewState.Neutral,
+                is ViewState.Loading -> {
+                    LoadingIndicator()
+                }
 
-            is ViewState.Error -> Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Erro: ${(viewState as ViewState.Error).throwable.message.orEmpty()}",
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
+                is ViewState.Success -> {
+                    val book = state.data
+                    BookDetailContent(book = book)
+                }
 
-            ViewState.Neutral -> {
-                Text("Detalhes do livro.", modifier = Modifier.padding(paddingValues))
+                is ViewState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Erro: ${state.throwable.message.orEmpty()}",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             }
         }
     }

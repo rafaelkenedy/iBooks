@@ -17,7 +17,7 @@ class BookDetailViewModel(
     private val getBookDetailsUseCase: GetBookDetailsUseCase
 ) : ViewModel() {
 
-    private val _bookDetailViewState = MutableStateFlow<ViewState<Book>>(ViewState.Loading)
+    private val _bookDetailViewState = MutableStateFlow<ViewState<Book>>(ViewState.Neutral)
     val bookDetailViewState: StateFlow<ViewState<Book>> = _bookDetailViewState.asStateFlow()
 
     fun loadBookDetails(bookId: String) {
