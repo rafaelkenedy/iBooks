@@ -43,11 +43,11 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** usando **Jetpac
 ## Screenshots
 
 <div align="center">
-  <img src="docs/screenshots/splash.png" alt="Splash Screen" width="200"/>
-  <img src="docs/screenshots/book_list.png" alt="Lista de Livros" width="200"/>
-  <img src="docs/screenshots/book_detail.png" alt="Detalhe do Livro" width="200"/>
-  <img src="docs/screenshots/book_list_light.png" alt="Lista de Livros Tema Claro" width="200"/>
-  <img src="docs/screenshots/book_detail_light.png" alt="Detalhe do Livro Tema Claro" width="200"/>
+  <img src="docs/screenshots/splash.png" alt="Splash Screen" width="160"/>
+  <img src="docs/screenshots/book_list.png" alt="Lista de Livros" width="160"/>
+  <img src="docs/screenshots/book_detail.png" alt="Detalhe do Livro" width="160"/>
+  <img src="docs/screenshots/book_list_light.png" alt="Lista de Livros Tema Claro" width="160"/>
+  <img src="docs/screenshots/book_detail_light.png" alt="Detalhe do Livro Tema Claro" width="160"/>
 </div>
 
 ---
