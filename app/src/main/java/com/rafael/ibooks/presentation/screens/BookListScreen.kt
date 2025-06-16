@@ -65,6 +65,11 @@ fun BookListScreen(
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
+    val initialTitle = stringResource(id = R.string.relevant_books_initial)
+    val foundBooksTitle = stringResource(id = R.string.found_books)
+
+    var listTitle by remember { mutableStateOf(initialTitle) }
+
     val showScrollToTopButton by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
@@ -146,8 +151,16 @@ fun BookListScreen(
             ) {
                 BookSearchBar(
                     query = screenState.searchText,
-                    onQueryChange = viewModel::onQueryChange,
-                    onSearch = viewModel::onSearch,
+                    onQueryChange = { newQuery ->
+                        viewModel.onQueryChange(newQuery)
+                        if (newQuery.isEmpty() && screenState.selectedGenre == null) {
+                            listTitle = initialTitle
+                        }
+                    },
+                    onSearch = {
+                        viewModel.onSearch()
+                        listTitle = foundBooksTitle
+                    },
                     searchResults = DEFAULT_SEARCH_SUGGESTIONS,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -157,10 +170,23 @@ fun BookListScreen(
                 GenreChips(
                     genres = GENRE_MAP.keys.toList(),
                     selectedGenre = screenState.selectedGenre,
-                    onGenreSelected = viewModel::onGenreSelected
+                    onGenreSelected = { genre ->
+                        viewModel.onGenreSelected(genre)
+                        listTitle = if (screenState.selectedGenre == genre) {
+                            initialTitle
+                        } else {
+                            genre
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = listTitle,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
                 when {
                     isLoading && (screenState.dataState as? DataState.Success)?.data.isNullOrEmpty() -> {

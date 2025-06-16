@@ -27,4 +27,6 @@
     <string name="erro_loading_img">Erro ao carregar imagem</string>
     <string name="book_saved_to_favorites">"%1$s foi salvo nos seus favoritos!"</string>
     <string name="share_book_with">Compartilhar livro com…</string>
+    <string name="relevant_books_initial">Livros Relevantes</string>
+    <string name="found_books">Livros Encontrados</string>
 </resources>
