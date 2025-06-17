@@ -13,10 +13,10 @@ import java.net.UnknownHostException
 
 abstract class BaseViewModel : ViewModel() {
 
-    protected val errorEventChannel = Channel<ErrorEvent>(Channel.BUFFERED)
+    private val errorEventChannel = Channel<ErrorEvent>(Channel.BUFFERED)
     val errorFlow = errorEventChannel.receiveAsFlow()
 
-    protected val loadingChannel = Channel<LoadingEvent>(Channel.BUFFERED)
+    private val loadingChannel = Channel<LoadingEvent>(Channel.BUFFERED)
     val loadingFlow = loadingChannel.receiveAsFlow()
 
     open fun onErrorDismissed() {}

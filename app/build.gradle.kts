@@ -27,6 +27,13 @@ android {
 
         val apiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY") ?: ""
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$apiKey\"")
+
+        val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+
+        buildConfigField("String", "GOOGLE_BOOKS_API_BASE_URL", "\"https://www.googleapis.com/books/v1/\"")
+        buildConfigField("String", "GEMINI_API_BASE_URL", "\"https://generativelanguage.googleapis.com/\"")
+
     }
 
     buildTypes {
