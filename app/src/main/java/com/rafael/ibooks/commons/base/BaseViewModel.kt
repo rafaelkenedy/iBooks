@@ -1,5 +1,6 @@
 package com.rafael.ibooks.commons.base
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafael.ibooks.commons.events.ErrorEvent
@@ -25,11 +26,13 @@ abstract class BaseViewModel : ViewModel() {
 
     private val onceEventLocks = mutableMapOf<Class<out UiEvent>, Boolean>()
 
-    protected fun sendUiEvent(event: UiEvent) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    protected open fun sendUiEvent(event: UiEvent) {
         viewModelScope.launch { _uiEventFlow.emit(event) }
     }
 
-    protected fun sendUiEventOnce(event: UiEvent) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    protected open fun sendUiEventOnce(event: UiEvent) {
         val key = event::class.java
         if (onceEventLocks[key] == true) return
 
@@ -68,6 +71,7 @@ abstract class BaseViewModel : ViewModel() {
         }
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     protected suspend fun sendActionableErrorEvent(error: Throwable, retryAction: (() -> Unit)?) {
         val safeRetryAction = retryAction ?: {}
         val dismissAction = ::onErrorDismissed

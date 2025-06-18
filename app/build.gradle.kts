@@ -31,8 +31,16 @@ android {
         val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
 
-        buildConfigField("String", "GOOGLE_BOOKS_API_BASE_URL", "\"https://www.googleapis.com/books/v1/\"")
-        buildConfigField("String", "GEMINI_API_BASE_URL", "\"https://generativelanguage.googleapis.com/\"")
+        buildConfigField(
+            "String",
+            "GOOGLE_BOOKS_API_BASE_URL",
+            "\"https://www.googleapis.com/books/v1/\""
+        )
+        buildConfigField(
+            "String",
+            "GEMINI_API_BASE_URL",
+            "\"https://generativelanguage.googleapis.com/\""
+        )
 
     }
 
@@ -69,6 +77,11 @@ android {
         compose = true
         buildConfig = true
     }
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
@@ -82,6 +95,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -97,4 +111,15 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
+    testImplementation(libs.mockk)
+    testImplementation(libs.mockk.agent)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.google.truth)
 }
