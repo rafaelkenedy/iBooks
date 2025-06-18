@@ -72,7 +72,13 @@ fun BookListItem(
                         contentScale = ContentScale.Crop
                     ),
                     loading = {
-                        CircularProgressIndicator()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     },
                     previewPlaceholder = painterResource(R.drawable.img_place_holder),
                     failure = {

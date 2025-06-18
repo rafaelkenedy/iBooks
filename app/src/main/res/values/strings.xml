@@ -29,4 +29,5 @@
     <string name="share_book_with">Compartilhar livro com…</string>
     <string name="relevant_books_initial">Livros Relevantes</string>
     <string name="found_books">Livros Encontrados</string>
+    <string name="no_suggestions">Sem sugestões</string>
 </resources>

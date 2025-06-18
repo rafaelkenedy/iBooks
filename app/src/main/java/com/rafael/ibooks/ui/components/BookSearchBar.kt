@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,74 +42,87 @@ fun BookSearchBar(
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     searchResults: List<String>,
-    isLoading: Boolean = false,
-    modifier: Modifier = Modifier
+    isLoading: Boolean = false
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        SearchBar(
-            modifier = Modifier.fillMaxWidth(),
-            windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = query,
-                    onQueryChange = {
-                        onQueryChange(it)
-                        if (it.isNotEmpty()) {
-                            expanded = true
-                        }
-                    },
-                    onSearch = {
-                        onSearch()
+    SearchBar(
+        modifier = Modifier.fillMaxWidth(),
+        windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = { newQuery ->
+                    onQueryChange(newQuery)
+                    if (newQuery.isNotEmpty()) {
+                        expanded = true
+                    } else {
                         expanded = false
-                    },
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    placeholder = { Text(stringResource(R.string.search_books)) },
-                    leadingIcon = {
-                        Box(contentAlignment = Alignment.Center) {
-                            FadeInExitInstantly(visible = expanded) {
-                                IconButton(onClick = {
-                                    expanded = false
-                                    onQueryChange("")
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = stringResource(R.string.back_icon)
-                                    )
-                                }
-                            }
-
-                            FadeInExitInstantly(visible = !expanded) {
+                    }
+                },
+                onSearch = {
+                    onSearch()
+                    expanded = false
+                },
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                placeholder = { Text(stringResource(R.string.search_books)) },
+                leadingIcon = {
+                    Box(contentAlignment = Alignment.Center) {
+                        FadeInExitInstantly(visible = expanded) {
+                            IconButton(onClick = {
+                                expanded = false
+                                onQueryChange("")
+                            }) {
                                 Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = stringResource(R.string.search_icon)
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back_icon)
                                 )
                             }
                         }
-                    },
-                    trailingIcon = {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { onQueryChange("") }) {
-                                Icon(
-                                    imageVector = Icons.Default.Clear,
-                                    contentDescription = stringResource(R.string.clear)
-                                )
-                            }
+
+                        FadeInExitInstantly(visible = !expanded) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(R.string.search_icon)
+                            )
                         }
                     }
-                )
-            }
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(R.string.clear)
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(0.dp)
         ) {
-            LazyColumn(
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                items(searchResults) { result ->
+            if (isLoading) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            } else {
+                itemsIndexed(
+                    items = searchResults,
+                    key = { index, result -> "$index-$result" }
+                ) { index, result ->
                     ListItem(
                         headlineContent = { Text(result) },
                         modifier = Modifier
@@ -119,10 +134,24 @@ fun BookSearchBar(
                             .fillMaxWidth()
                     )
                 }
+
+                if (searchResults.isEmpty() && query.isNotEmpty() && !isLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = stringResource(R.string.no_suggestions))
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 private fun FadeInExitInstantly(
