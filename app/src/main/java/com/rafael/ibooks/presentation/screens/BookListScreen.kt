@@ -53,6 +53,7 @@ import com.rafael.ibooks.ui.components.GenreChips
 import com.rafael.ibooks.ui.components.LoadingIndicator
 import com.rafael.ibooks.ui.theme.IBooksTheme
 import com.rafael.ibooks.utils.GENRE_MAP
+import com.rafael.ibooks.utils.VERTICAL_FADE_BRUSH_SCREEN
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -222,6 +223,7 @@ fun BookListScreen(
                                 },
                                 modifier = Modifier
                                     .weight(1f)
+                                    .fadingEdge(VERTICAL_FADE_BRUSH_SCREEN)
                             )
                         } else if (!isLoading) {
                             Box(

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.rafael.ibooks.R
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
+import com.rafael.ibooks.commons.events.UiEvent
 import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.presentation.state.DetailDataState
 import com.rafael.ibooks.presentation.viewmodel.BookDetailViewModel
@@ -42,8 +43,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun BookDetailScreen(
     bookId: String,
-    onBackClick: () -> Unit,
-    viewModel: BookDetailViewModel = koinViewModel()
+    viewModel: BookDetailViewModel = koinViewModel(),
+    onNavigateBack: () -> Unit
 ) {
     val screenState by viewModel.screenState.collectAsState()
     val loadingEvent by viewModel.loadingFlow.collectAsState(initial = LoadingEvent.Hide)
@@ -53,7 +54,20 @@ fun BookDetailScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var backEnabled by remember { mutableStateOf(true) }
+
+    var lastEventTime = 0L
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEventFlow.collect { event ->
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastEventTime > 500) {
+                lastEventTime = currentTime
+                when (event) {
+                    UiEvent.NavigateBack -> onNavigateBack()
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.errorFlow.collect { event ->

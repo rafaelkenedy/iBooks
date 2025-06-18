@@ -22,7 +22,7 @@ class BookDetailViewModel(
     val screenState: StateFlow<BookDetailScreenState> = _screenState.asStateFlow()
 
     fun onBackClick() {
-        sendUiEvent(UiEvent.NavigateBack)
+        sendUiEventOnce(UiEvent.NavigateBack)
     }
 
     fun loadBookDetails(bookId: String) {

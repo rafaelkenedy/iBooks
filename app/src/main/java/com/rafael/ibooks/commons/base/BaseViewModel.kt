@@ -6,28 +6,41 @@ import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
 import com.rafael.ibooks.commons.events.UiEvent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.net.UnknownHostException
 
 abstract class BaseViewModel : ViewModel() {
 
-    private val errorEventChannel = Channel<ErrorEvent>(Channel.BUFFERED)
-    val errorFlow = errorEventChannel.receiveAsFlow()
+    private val _errorFlow = MutableSharedFlow<ErrorEvent>()
+    val errorFlow = _errorFlow.asSharedFlow()
 
-    private val loadingChannel = Channel<LoadingEvent>(Channel.BUFFERED)
-    val loadingFlow = loadingChannel.receiveAsFlow()
+    private val _loadingFlow = MutableSharedFlow<LoadingEvent>()
+    val loadingFlow = _loadingFlow.asSharedFlow()
 
-    private val _uiEventChannel = Channel<UiEvent>(Channel.BUFFERED)
-    val uiEventFlow = _uiEventChannel.receiveAsFlow()
+    private val _uiEventFlow = MutableSharedFlow<UiEvent>()
+    val uiEventFlow = _uiEventFlow.asSharedFlow()
+
+    private val onceEventLocks = mutableMapOf<Class<out UiEvent>, Boolean>()
 
     protected fun sendUiEvent(event: UiEvent) {
-        viewModelScope.launch { _uiEventChannel.send(event) }
+        viewModelScope.launch { _uiEventFlow.emit(event) }
+    }
+
+    protected fun sendUiEventOnce(event: UiEvent) {
+        val key = event::class.java
+        if (onceEventLocks[key] == true) return
+
+        onceEventLocks[key] = true
+        viewModelScope.launch {
+            _uiEventFlow.emit(event)
+        }
     }
 
     open fun onErrorDismissed() {}
+
 
     fun launch(
         retryAction: (() -> Unit)? = null,
@@ -36,23 +49,20 @@ abstract class BaseViewModel : ViewModel() {
         block: suspend CoroutineScope.() -> Unit
     ) {
         viewModelScope.launch {
-            if (loadingEvent == LoadingEvent.Show) {
-                loadingChannel.send(LoadingEvent.Show)
-            }
-            runCatching {
+            try {
+                if (loadingEvent == LoadingEvent.Show) {
+                    _loadingFlow.emit(LoadingEvent.Show)
+                }
                 block()
-            }.onSuccess {
-                if (loadingEvent == LoadingEvent.Show) {
-                    loadingChannel.send(LoadingEvent.Hide)
-                }
-            }.onFailure { error ->
-                if (loadingEvent == LoadingEvent.Show) {
-                    loadingChannel.send(LoadingEvent.Hide)
-                }
+            } catch (error: Throwable) {
                 if (onError != null) {
                     onError(error)
                 } else {
                     sendActionableErrorEvent(error, retryAction)
+                }
+            } finally {
+                if (loadingEvent == LoadingEvent.Show) {
+                    _loadingFlow.emit(LoadingEvent.Hide)
                 }
             }
         }
@@ -75,6 +85,6 @@ abstract class BaseViewModel : ViewModel() {
                 throwable = error, retryAction = safeRetryAction, onDismiss = dismissAction
             )
         }
-        errorEventChannel.send(event)
+        _errorFlow.emit(event)
     }
 }

@@ -40,6 +40,7 @@ fun BookSearchBar(
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     searchResults: List<String>,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
