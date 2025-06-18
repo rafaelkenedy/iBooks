@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
+import com.rafael.ibooks.commons.events.UiEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -18,6 +19,13 @@ abstract class BaseViewModel : ViewModel() {
 
     private val loadingChannel = Channel<LoadingEvent>(Channel.BUFFERED)
     val loadingFlow = loadingChannel.receiveAsFlow()
+
+    private val _uiEventChannel = Channel<UiEvent>(Channel.BUFFERED)
+    val uiEventFlow = _uiEventChannel.receiveAsFlow()
+
+    protected fun sendUiEvent(event: UiEvent) {
+        viewModelScope.launch { _uiEventChannel.send(event) }
+    }
 
     open fun onErrorDismissed() {}
 

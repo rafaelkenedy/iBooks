@@ -3,7 +3,9 @@ package com.rafael.ibooks.presentation.screens
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.rafael.ibooks.R
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
@@ -32,6 +35,7 @@ import com.rafael.ibooks.ui.components.BookDetailContent
 import com.rafael.ibooks.ui.components.BookDetailTopAppBar
 import com.rafael.ibooks.ui.components.ErrorAlertDialog
 import com.rafael.ibooks.ui.components.LoadingIndicator
+import com.rafael.ibooks.utils.VERTICAL_FADE_BRUSH
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -49,6 +53,7 @@ fun BookDetailScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var backEnabled by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         viewModel.errorFlow.collect { event ->
@@ -85,7 +90,7 @@ fun BookDetailScreen(
 
     Scaffold(
         topBar = {
-            BookDetailTopAppBar(onBackClick = onBackClick)
+            BookDetailTopAppBar(onBackClick = { viewModel.onBackClick() })
         },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
@@ -96,6 +101,7 @@ fun BookDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .fadingEdge(VERTICAL_FADE_BRUSH)
         ) {
 
             when (val state = screenState.detailDataState) {
@@ -138,6 +144,7 @@ fun BookDetailScreen(
                 }
             }
         }
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

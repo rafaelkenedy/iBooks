@@ -1,6 +1,7 @@
 package com.rafael.ibooks.presentation.viewmodel
 
 import com.rafael.ibooks.commons.base.BaseViewModel
+import com.rafael.ibooks.commons.events.UiEvent
 import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.domain.usecase.GetBookDetailsUseCase
 import com.rafael.ibooks.presentation.state.DetailDataState
@@ -19,6 +20,10 @@ class BookDetailViewModel(
 
     private val _screenState = MutableStateFlow(BookDetailScreenState())
     val screenState: StateFlow<BookDetailScreenState> = _screenState.asStateFlow()
+
+    fun onBackClick() {
+        sendUiEvent(UiEvent.NavigateBack)
+    }
 
     fun loadBookDetails(bookId: String) {
         launch(

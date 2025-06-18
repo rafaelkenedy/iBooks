@@ -30,6 +30,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,10 +52,16 @@ import com.rafael.ibooks.ui.components.ErrorAlertDialog
 import com.rafael.ibooks.ui.components.GenreChips
 import com.rafael.ibooks.ui.components.LoadingIndicator
 import com.rafael.ibooks.ui.theme.IBooksTheme
-import com.rafael.ibooks.utils.DEFAULT_SEARCH_SUGGESTIONS
 import com.rafael.ibooks.utils.GENRE_MAP
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+
+fun Modifier.fadingEdge(brush: Brush) = this
+    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    .drawWithContent {
+        drawContent()
+        drawRect(brush = brush, blendMode = BlendMode.DstIn)
+    }
 
 @Composable
 fun BookListScreen(
@@ -70,9 +81,11 @@ fun BookListScreen(
 
     var listTitle by remember { mutableStateOf(initialTitle) }
 
+
     val showScrollToTopButton by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
+
     val isAtBottom by remember {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
@@ -128,6 +141,7 @@ fun BookListScreen(
                 exit = fadeOut()
             ) {
                 FloatingActionButton(
+                    modifier = Modifier.padding(16.dp),
                     onClick = {
                         coroutineScope.launch {
                             listState.animateScrollToItem(index = 0)
@@ -205,7 +219,9 @@ fun BookListScreen(
                                     { DotLoadingIndicator() }
                                 } else {
                                     null
-                                }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
                             )
                         } else if (!isLoading) {
                             Box(
@@ -226,7 +242,6 @@ fun BookListScreen(
                                 text = stringResource(R.string.error),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-
                         }
                     }
                 }
