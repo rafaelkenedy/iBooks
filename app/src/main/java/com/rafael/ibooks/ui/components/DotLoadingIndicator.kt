@@ -1,4 +1,3 @@
-// NOVO ARQUIVO: ui/components/DotLoadingIndicator.kt (ou pode adicionar no BookListScreen.kt para teste)
 package com.rafael.ibooks.ui.components
 
 import androidx.compose.animation.core.RepeatMode

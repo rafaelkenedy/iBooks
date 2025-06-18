@@ -1,5 +1,3 @@
-// Em ui/components/GenreChips.kt
-
 package com.rafael.ibooks.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
