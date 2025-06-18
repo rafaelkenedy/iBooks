@@ -38,16 +38,18 @@ import com.rafael.ibooks.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSearchBar(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     searchResults: List<String>,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     SearchBar(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
         expanded = expanded,
         onExpandedChange = { expanded = it },
