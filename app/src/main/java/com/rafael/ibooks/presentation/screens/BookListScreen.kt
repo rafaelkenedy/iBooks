@@ -161,7 +161,7 @@ fun BookListScreen(
                         viewModel.onSearch()
                         listTitle = foundBooksTitle
                     },
-                    searchResults = DEFAULT_SEARCH_SUGGESTIONS,
+                    searchResults = screenState.suggestions,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)

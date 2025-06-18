@@ -1,28 +1,23 @@
 package com.rafael.ibooks.data.remote.model
 
+import com.google.gson.annotations.SerializedName
+
 data class GeminiGenerateContentResponse(
+    @SerializedName("candidates")
     val candidates: List<Candidate>?,
-    val promptFeedback: PromptFeedback?
 ) {
     data class Candidate(
-        val content: Content,
+        @SerializedName("content")
+        val content: Content
     )
 
     data class Content(
-        val parts: List<Part>,
-        val role: String
-    )
-
-    data class Part(
-        val text: String
-    )
-
-    data class PromptFeedback(
-        val safetyRatings: List<SafetyRating>
-    )
-
-    data class SafetyRating(
-        val category: String,
-        val probability: String
-    )
+        @SerializedName("parts")
+        val parts: List<Part>
+    ) {
+        data class Part(
+            @SerializedName("text")
+            val text: String
+        )
+    }
 }

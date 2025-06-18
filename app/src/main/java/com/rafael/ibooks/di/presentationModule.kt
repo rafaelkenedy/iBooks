@@ -7,6 +7,6 @@ import org.koin.dsl.module
 
 val presentationModule = module {
 
-    viewModel { BookListViewModel(get(), get(), get()) }
+    viewModel { BookListViewModel(get(), get(), get(), get()) }
     viewModel { BookDetailViewModel(get()) }
 }

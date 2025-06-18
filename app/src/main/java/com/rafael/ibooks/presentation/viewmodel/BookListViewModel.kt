@@ -2,6 +2,7 @@ package com.rafael.ibooks.presentation.viewmodel
 
 import com.rafael.ibooks.commons.base.BaseViewModel
 import com.rafael.ibooks.domain.Book
+import com.rafael.ibooks.domain.usecase.GenerateBookTitlesUseCase
 import com.rafael.ibooks.domain.usecase.GetRecentBooksUseCase
 import com.rafael.ibooks.domain.usecase.SearchBooksUseCase
 import com.rafael.ibooks.presentation.state.DataState
@@ -13,7 +14,8 @@ import kotlinx.coroutines.flow.update
 class BookListViewModel(
     private val searchBooksUseCase: SearchBooksUseCase,
     private val getRecentBooksUseCase: GetRecentBooksUseCase,
-    private val genreMap: Map<String, String>
+    private val genreMap: Map<String, String>,
+    private val getSuggestions: GenerateBookTitlesUseCase
 ) : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(BookListScreenState())
@@ -21,7 +23,31 @@ class BookListViewModel(
 
     init {
         searchBooks(query = null)
+        loadSuggestions()
     }
+
+    private fun loadSuggestions() {
+        _screenState.update { it.copy(suggestionsLoading = true) }
+
+        launch(
+            retryAction = { loadSuggestions() },
+            onError = { error ->
+                _screenState.update {
+                    it.copy(suggestionsLoading = false)
+                }
+                sendActionableErrorEvent(error) { loadSuggestions() }
+            }
+        ) {
+            val titles: List<String> = getSuggestions()
+            _screenState.update {
+                it.copy(
+                    suggestions = titles,
+                    suggestionsLoading = false
+                )
+            }
+        }
+    }
+
 
     fun onQueryChange(newQuery: String) {
         _screenState.update { it.copy(searchText = newQuery) }
@@ -127,5 +153,7 @@ class BookListViewModel(
 data class BookListScreenState(
     val dataState: DataState<List<Book>>? = null,
     val selectedGenre: String? = null,
-    val searchText: String = ""
+    val searchText: String = "",
+    val suggestions: List<String> = emptyList(),
+    val suggestionsLoading: Boolean = false
 )

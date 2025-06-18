@@ -1,7 +1,7 @@
 package com.rafael.ibooks.domain.repository
 
-import com.rafael.ibooks.data.remote.model.GeminiGenerateContentResponse
+import com.rafael.ibooks.data.remote.model.GeminiGenerateContentRequest
 
 interface IGeminiRepository {
-    suspend fun generateContent(prompt: String): Result<GeminiGenerateContentResponse>
+    suspend fun generateBookTitles(request: GeminiGenerateContentRequest): List<String>
 }
