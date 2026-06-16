@@ -177,6 +177,7 @@ fun BookListScreen(
                         listTitle = foundBooksTitle
                     },
                     searchResults = screenState.suggestions,
+                    isLoading = screenState.suggestionsLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)

@@ -6,7 +6,7 @@ import com.rafael.ibooks.data.remote.service.IGeminiApi
 
 class GeminiRemoteDataSourceImpl(
     private val geminiApi: IGeminiApi,
-    private val modelName: String = "gemini-2.0-flash"
+    private val modelName: String = "gemini-2.5-flash-lite"
 ) : IGeminiRemoteDataSource {
 
     override suspend fun generateContent(
