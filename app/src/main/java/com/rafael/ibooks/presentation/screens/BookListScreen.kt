@@ -13,9 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +69,11 @@ fun Modifier.fadingEdge(brush: Brush) = this
         drawRect(brush = brush, blendMode = BlendMode.DstIn)
     }
 
+private enum class BookListTab {
+    Discover,
+    WantToRead
+}
+
 @Composable
 fun BookListScreen(
     viewModel: BookListViewModel = koinViewModel(),
@@ -76,6 +86,7 @@ fun BookListScreen(
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var selectedTab by rememberSaveable { mutableStateOf(BookListTab.Discover) }
 
     val initialTitle = stringResource(id = R.string.relevant_books_initial)
     val foundBooksTitle = stringResource(id = R.string.found_books)
@@ -107,8 +118,8 @@ fun BookListScreen(
         }
     }
 
-    LaunchedEffect(isAtBottom) {
-        if (isAtBottom && !isLoading) {
+    LaunchedEffect(isAtBottom, selectedTab) {
+        if (selectedTab == BookListTab.Discover && isAtBottom && !isLoading) {
             viewModel.loadNextPage()
         }
     }
@@ -135,6 +146,32 @@ fun BookListScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { BookTopAppBar() },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == BookListTab.Discover,
+                    onClick = { selectedTab = BookListTab.Discover },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = stringResource(R.string.discover)
+                        )
+                    },
+                    label = { Text(stringResource(R.string.discover)) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == BookListTab.WantToRead,
+                    onClick = { selectedTab = BookListTab.WantToRead },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Favorite,
+                            contentDescription = stringResource(R.string.want_to_read)
+                        )
+                    },
+                    label = { Text(stringResource(R.string.want_to_read)) }
+                )
+            }
+        },
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showScrollToTopButton,
@@ -164,6 +201,34 @@ fun BookListScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
+                if (selectedTab == BookListTab.WantToRead) {
+                    Text(
+                        text = stringResource(R.string.want_to_read),
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+
+                    if (screenState.wantToReadBooks.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = stringResource(R.string.empty_want_to_read))
+                        }
+                    } else {
+                        BookList(
+                            books = screenState.wantToReadBooks,
+                            onItemClick = onBookClick,
+                            listState = listState,
+                            onSwipeEndToStart = viewModel::onWantToReadBookRemoved,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fadingEdge(VERTICAL_FADE_BRUSH_SCREEN)
+                        )
+                    }
+                    return@Column
+                }
+
                 BookSearchBar(
                     query = screenState.searchText,
                     onQueryChange = { newQuery ->
@@ -217,6 +282,8 @@ fun BookListScreen(
                                 books = books,
                                 onItemClick = onBookClick,
                                 listState = listState,
+                                onSwipeStartToEnd = viewModel::onBookSavedToWantToRead,
+                                onSwipeEndToStart = viewModel::onBookDismissed,
                                 bottomContent = if (isLoading) {
                                     { DotLoadingIndicator() }
                                 } else {

@@ -32,6 +32,8 @@ fun BookList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     listState: LazyListState,
     onItemClick: (book: Book) -> Unit,
+    onSwipeStartToEnd: (book: Book) -> Unit = {},
+    onSwipeEndToStart: (book: Book) -> Unit = {},
     bottomContent: (@Composable () -> Unit)? = null
 ) {
     val visibleState = remember {
@@ -53,6 +55,8 @@ fun BookList(
                 BookListItem(
                     book = book,
                     onItemClick = onItemClick,
+                    onSwipeStartToEnd = onSwipeStartToEnd,
+                    onSwipeEndToStart = onSwipeEndToStart,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .animateEnterExit(

@@ -30,4 +30,7 @@
     <string name="relevant_books_initial">Livros Relevantes</string>
     <string name="found_books">Livros Encontrados</string>
     <string name="no_suggestions">Sem sugestões</string>
+    <string name="discover">Descobrir</string>
+    <string name="discard_book">Descartar</string>
+    <string name="empty_want_to_read">Você ainda não salvou livros para ler.</string>
 </resources>

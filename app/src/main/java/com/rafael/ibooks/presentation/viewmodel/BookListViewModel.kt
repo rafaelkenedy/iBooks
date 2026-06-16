@@ -121,6 +121,47 @@ class BookListViewModel(
         }
     }
 
+    fun onBookDismissed(book: Book) {
+        removeBookFromCurrentResults(book)
+    }
+
+    fun onBookSavedToWantToRead(book: Book) {
+        _screenState.update { state ->
+            val alreadySaved = state.wantToReadBooks.any { it.id == book.id }
+            state.copy(
+                wantToReadBooks = if (alreadySaved) {
+                    state.wantToReadBooks
+                } else {
+                    state.wantToReadBooks + book
+                }
+            )
+        }
+        removeBookFromCurrentResults(book)
+    }
+
+    fun onWantToReadBookRemoved(book: Book) {
+        _screenState.update { state ->
+            state.copy(
+                wantToReadBooks = state.wantToReadBooks.filterNot { it.id == book.id }
+            )
+        }
+    }
+
+    private fun removeBookFromCurrentResults(book: Book) {
+        _screenState.update { state ->
+            val currentDataState = state.dataState
+            if (currentDataState is DataState.Success) {
+                state.copy(
+                    dataState = currentDataState.copy(
+                        data = currentDataState.data.filterNot { it.id == book.id }
+                    )
+                )
+            } else {
+                state
+            }
+        }
+    }
+
     private fun getQueryForNextPage(): String? {
         val state = _screenState.value
         return when {
@@ -155,5 +196,6 @@ data class BookListScreenState(
     val selectedGenre: String? = null,
     val searchText: String = "",
     val suggestions: List<String> = emptyList(),
-    val suggestionsLoading: Boolean = false
+    val suggestionsLoading: Boolean = false,
+    val wantToReadBooks: List<Book> = emptyList()
 )
