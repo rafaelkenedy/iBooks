@@ -3,26 +3,16 @@ package com.rafael.ibooks.presentation.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -47,18 +36,11 @@ import com.rafael.ibooks.R
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
 import com.rafael.ibooks.domain.Book
-import com.rafael.ibooks.presentation.state.DataState
 import com.rafael.ibooks.presentation.viewmodel.BookListViewModel
-import com.rafael.ibooks.ui.components.BookList
-import com.rafael.ibooks.ui.components.BookSearchBar
+import com.rafael.ibooks.ui.components.BookListBottomBar
 import com.rafael.ibooks.ui.components.BookTopAppBar
-import com.rafael.ibooks.ui.components.DotLoadingIndicator
 import com.rafael.ibooks.ui.components.ErrorAlertDialog
-import com.rafael.ibooks.ui.components.GenreChips
-import com.rafael.ibooks.ui.components.LoadingIndicator
 import com.rafael.ibooks.ui.theme.IBooksTheme
-import com.rafael.ibooks.utils.GENRE_MAP
-import com.rafael.ibooks.utils.VERTICAL_FADE_BRUSH_SCREEN
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -68,11 +50,6 @@ fun Modifier.fadingEdge(brush: Brush) = this
         drawContent()
         drawRect(brush = brush, blendMode = BlendMode.DstIn)
     }
-
-private enum class BookListTab {
-    Discover,
-    WantToRead
-}
 
 @Composable
 fun BookListScreen(
@@ -147,30 +124,10 @@ fun BookListScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = { BookTopAppBar() },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedTab == BookListTab.Discover,
-                    onClick = { selectedTab = BookListTab.Discover },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = stringResource(R.string.discover)
-                        )
-                    },
-                    label = { Text(stringResource(R.string.discover)) }
-                )
-                NavigationBarItem(
-                    selected = selectedTab == BookListTab.WantToRead,
-                    onClick = { selectedTab = BookListTab.WantToRead },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Favorite,
-                            contentDescription = stringResource(R.string.want_to_read)
-                        )
-                    },
-                    label = { Text(stringResource(R.string.want_to_read)) }
-                )
-            }
+            BookListBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
         },
         floatingActionButton = {
             AnimatedVisibility(
@@ -201,119 +158,27 @@ fun BookListScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                if (selectedTab == BookListTab.WantToRead) {
-                    Text(
-                        text = stringResource(R.string.want_to_read),
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(vertical = 16.dp)
+                when (selectedTab) {
+                    BookListTab.Discover -> DiscoverBooksContent(
+                        screenState = screenState,
+                        isLoading = isLoading,
+                        listState = listState,
+                        listTitle = listTitle,
+                        onListTitleChange = { listTitle = it },
+                        onQueryChange = viewModel::onQueryChange,
+                        onSearch = viewModel::onSearch,
+                        onGenreSelected = viewModel::onGenreSelected,
+                        onBookClick = onBookClick,
+                        onBookSwipe = viewModel::onDiscoverBookSwipe
                     )
 
-                    if (screenState.wantToReadBooks.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = stringResource(R.string.empty_want_to_read))
-                        }
-                    } else {
-                        BookList(
-                            books = screenState.wantToReadBooks,
-                            onItemClick = onBookClick,
-                            listState = listState,
-                            onSwipeEndToStart = viewModel::onWantToReadBookRemoved,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fadingEdge(VERTICAL_FADE_BRUSH_SCREEN)
-                        )
-                    }
-                    return@Column
-                }
-
-                BookSearchBar(
-                    query = screenState.searchText,
-                    onQueryChange = { newQuery ->
-                        viewModel.onQueryChange(newQuery)
-                        if (newQuery.isEmpty() && screenState.selectedGenre == null) {
-                            listTitle = initialTitle
-                        }
-                    },
-                    onSearch = {
-                        viewModel.onSearch()
-                        listTitle = foundBooksTitle
-                    },
-                    searchResults = screenState.suggestions,
-                    isLoading = screenState.suggestionsLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                )
-
-                GenreChips(
-                    genres = GENRE_MAP.keys.toList(),
-                    selectedGenre = screenState.selectedGenre,
-                    onGenreSelected = { genre ->
-                        viewModel.onGenreSelected(genre)
-                        listTitle = if (screenState.selectedGenre == genre) {
-                            initialTitle
-                        } else {
-                            genre
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = listTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                when {
-                    isLoading && (screenState.dataState as? DataState.Success)?.data.isNullOrEmpty() -> {
-                        LoadingIndicator()
-                    }
-
-                    screenState.dataState is DataState.Success -> {
-                        val books = (screenState.dataState as DataState.Success<List<Book>>).data
-
-                        if (books.isNotEmpty()) {
-                            BookList(
-                                books = books,
-                                onItemClick = onBookClick,
-                                listState = listState,
-                                onSwipeStartToEnd = viewModel::onBookSavedToWantToRead,
-                                onSwipeEndToStart = viewModel::onBookDismissed,
-                                bottomContent = if (isLoading) {
-                                    { DotLoadingIndicator() }
-                                } else {
-                                    null
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fadingEdge(VERTICAL_FADE_BRUSH_SCREEN)
-                            )
-                        } else if (!isLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = stringResource(R.string.empty_search_results))
-                            }
-                        }
-                    }
-
-                    screenState.dataState is DataState.Error -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.error),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    BookListTab.WantToRead -> WantToReadContent(
+                        books = screenState.wantToReadBooks,
+                        listState = listState,
+                        onBookClick = onBookClick,
+                        onRemoveBook = viewModel::onWantToReadBookRemoved,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }

@@ -4,8 +4,12 @@ import com.rafael.ibooks.commons.base.BaseViewModel
 import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.domain.usecase.GenerateBookTitlesUseCase
 import com.rafael.ibooks.domain.usecase.GetRecentBooksUseCase
+import com.rafael.ibooks.domain.usecase.ObserveWantToReadBooksUseCase
+import com.rafael.ibooks.domain.usecase.RemoveWantToReadBookUseCase
+import com.rafael.ibooks.domain.usecase.SaveWantToReadBookUseCase
 import com.rafael.ibooks.domain.usecase.SearchBooksUseCase
 import com.rafael.ibooks.presentation.state.DataState
+import com.rafael.ibooks.ui.components.BookSwipeAction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,15 +19,27 @@ class BookListViewModel(
     private val searchBooksUseCase: SearchBooksUseCase,
     private val getRecentBooksUseCase: GetRecentBooksUseCase,
     private val genreMap: Map<String, String>,
-    private val getSuggestions: GenerateBookTitlesUseCase
+    private val getSuggestions: GenerateBookTitlesUseCase,
+    private val observeWantToReadBooksUseCase: ObserveWantToReadBooksUseCase,
+    private val saveWantToReadBook: SaveWantToReadBookUseCase,
+    private val removeWantToReadBook: RemoveWantToReadBookUseCase
 ) : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(BookListScreenState())
     val screenState: StateFlow<BookListScreenState> = _screenState.asStateFlow()
 
     init {
+        observeSavedBooks()
         searchBooks(query = null)
         loadSuggestions()
+    }
+
+    private fun observeSavedBooks() {
+        launch(loadingEvent = null) {
+            observeWantToReadBooksUseCase().collect { books ->
+                _screenState.update { it.copy(wantToReadBooks = books) }
+            }
+        }
     }
 
     private fun loadSuggestions() {
@@ -125,25 +141,23 @@ class BookListViewModel(
         removeBookFromCurrentResults(book)
     }
 
+    fun onDiscoverBookSwipe(book: Book, action: BookSwipeAction) {
+        when (action) {
+            BookSwipeAction.SaveToWantToRead -> onBookSavedToWantToRead(book)
+            BookSwipeAction.Dismiss -> onBookDismissed(book)
+        }
+    }
+
     fun onBookSavedToWantToRead(book: Book) {
-        _screenState.update { state ->
-            val alreadySaved = state.wantToReadBooks.any { it.id == book.id }
-            state.copy(
-                wantToReadBooks = if (alreadySaved) {
-                    state.wantToReadBooks
-                } else {
-                    state.wantToReadBooks + book
-                }
-            )
+        launch(loadingEvent = null) {
+            saveWantToReadBook(book)
         }
         removeBookFromCurrentResults(book)
     }
 
     fun onWantToReadBookRemoved(book: Book) {
-        _screenState.update { state ->
-            state.copy(
-                wantToReadBooks = state.wantToReadBooks.filterNot { it.id == book.id }
-            )
+        launch(loadingEvent = null) {
+            removeWantToReadBook(book)
         }
     }
 

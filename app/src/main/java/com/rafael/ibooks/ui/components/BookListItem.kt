@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -55,8 +56,9 @@ import com.skydoves.landscapist.glide.GlideImage
 fun BookListItem(
     book: Book,
     onItemClick: (Book) -> Unit,
-    onSwipeStartToEnd: (Book) -> Unit = {},
-    onSwipeEndToStart: (Book) -> Unit = {},
+    onSwipeAction: (Book, BookSwipeAction) -> Unit = { _, _ -> },
+    enableSwipeStartToEnd: Boolean = true,
+    enableSwipeEndToStart: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
@@ -64,13 +66,11 @@ fun BookListItem(
     LaunchedEffect(dismissState.currentValue) {
         when (dismissState.currentValue) {
             SwipeToDismissBoxValue.StartToEnd -> {
-                onSwipeStartToEnd(book)
-                dismissState.reset()
+                onSwipeAction(book, BookSwipeAction.SaveToWantToRead)
             }
 
             SwipeToDismissBoxValue.EndToStart -> {
-                onSwipeEndToStart(book)
-                dismissState.reset()
+                onSwipeAction(book, BookSwipeAction.Dismiss)
             }
 
             SwipeToDismissBoxValue.Settled -> Unit
@@ -79,11 +79,12 @@ fun BookListItem(
 
     SwipeToDismissBox(
         state = dismissState,
-        enableDismissFromStartToEnd = true,
-        enableDismissFromEndToStart = true,
+        enableDismissFromStartToEnd = enableSwipeStartToEnd,
+        enableDismissFromEndToStart = enableSwipeEndToStart,
         backgroundContent = {
             SwipeActionBackground(
-                action = dismissState.targetValue
+                showSaveAction = enableSwipeStartToEnd,
+                showDismissAction = enableSwipeEndToStart
             )
         },
         modifier = modifier
@@ -172,38 +173,76 @@ fun BookListItem(
 }
 
 @Composable
-private fun SwipeActionBackground(action: SwipeToDismissBoxValue) {
-    val isSaveAction = action == SwipeToDismissBoxValue.StartToEnd
-    val alignStart = isSaveAction
-    val containerColor = if (isSaveAction) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.errorContainer
-    }
-    val contentColor = if (isSaveAction) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onErrorContainer
-    }
-    val label = stringResource(
-        if (isSaveAction) R.string.want_to_read else R.string.discard_book
-    )
-
-    Row(
+private fun SwipeActionBackground(
+    showSaveAction: Boolean,
+    showDismissAction: Boolean
+) {
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        if (showSaveAction) {
+            SwipeActionLabel(
+                label = stringResource(R.string.want_to_read),
+                alignment = Alignment.CenterStart,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = stringResource(R.string.want_to_read),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                },
+                modifier = Modifier.align(Alignment.CenterStart)
+            )
+        }
+
+        if (showDismissAction) {
+            SwipeActionLabel(
+                label = stringResource(R.string.discard_book),
+                alignment = Alignment.CenterEnd,
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.discard_book),
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                },
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SwipeActionLabel(
+    label: String,
+    alignment: Alignment,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    icon: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxHeight()
+            .width(180.dp)
             .background(containerColor)
             .padding(horizontal = 24.dp),
-        horizontalArrangement = if (alignStart) Arrangement.Start else Arrangement.End,
+        horizontalArrangement = if (alignment == Alignment.CenterStart) {
+            Arrangement.Start
+        } else {
+            Arrangement.End
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (isSaveAction) {
-            Icon(
-                imageVector = Icons.Filled.Favorite,
-                contentDescription = label,
-                tint = contentColor
-            )
+        if (alignment == Alignment.CenterStart) {
+            icon()
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(
@@ -211,13 +250,9 @@ private fun SwipeActionBackground(action: SwipeToDismissBoxValue) {
             color = contentColor,
             style = MaterialTheme.typography.labelLarge
         )
-        if (!isSaveAction) {
+        if (alignment == Alignment.CenterEnd) {
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = label,
-                tint = contentColor
-            )
+            icon()
         }
     }
 }

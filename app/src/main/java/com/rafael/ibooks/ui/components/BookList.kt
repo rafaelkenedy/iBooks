@@ -32,8 +32,9 @@ fun BookList(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     listState: LazyListState,
     onItemClick: (book: Book) -> Unit,
-    onSwipeStartToEnd: (book: Book) -> Unit = {},
-    onSwipeEndToStart: (book: Book) -> Unit = {},
+    onSwipeAction: (book: Book, action: BookSwipeAction) -> Unit = { _, _ -> },
+    enableSwipeStartToEnd: Boolean = true,
+    enableSwipeEndToStart: Boolean = true,
     bottomContent: (@Composable () -> Unit)? = null
 ) {
     val visibleState = remember {
@@ -51,12 +52,16 @@ fun BookList(
         modifier = modifier
     ) {
         LazyColumn(contentPadding = contentPadding, state = listState) {
-            itemsIndexed(books) { index, book ->
+            itemsIndexed(
+                items = books,
+                key = { _, book -> book.id }
+            ) { index, book ->
                 BookListItem(
                     book = book,
                     onItemClick = onItemClick,
-                    onSwipeStartToEnd = onSwipeStartToEnd,
-                    onSwipeEndToStart = onSwipeEndToStart,
+                    onSwipeAction = onSwipeAction,
+                    enableSwipeStartToEnd = enableSwipeStartToEnd,
+                    enableSwipeEndToStart = enableSwipeEndToStart,
                     modifier = Modifier
                         .padding(vertical = 8.dp)
                         .animateEnterExit(
