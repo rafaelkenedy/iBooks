@@ -50,6 +50,7 @@ import kotlin.math.floor
 @Composable
 fun BookDetailContent(
     book: Book,
+    isWantToRead: Boolean,
     onReadClick: (Book) -> Unit,
     onShareClick: (Book) -> Unit
 ) {
@@ -142,6 +143,7 @@ fun BookDetailContent(
             ) {
                 Button(
                     modifier = Modifier.weight(1f),
+                    enabled = !isWantToRead,
                     onClick = { onReadClick(book) }
                 ) {
                     Text(stringResource(R.string.want_to_read))
@@ -191,6 +193,7 @@ fun BookDetailContentPreview() {
         val sampleBook = SAMPLE_BOOK
         BookDetailContent(
             book = sampleBook,
+            isWantToRead = false,
             onReadClick = { },
             onShareClick = { }
         )

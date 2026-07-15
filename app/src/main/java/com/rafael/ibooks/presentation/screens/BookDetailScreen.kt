@@ -126,7 +126,9 @@ fun BookDetailScreen(
                     (state as? DetailDataState.Success)?.data?.let { book ->
                         BookDetailContent(
                             book = book,
+                            isWantToRead = screenState.isWantToRead,
                             onReadClick = { selectedBook ->
+                                viewModel.onWantToReadClick(selectedBook)
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         message = context.getString(

@@ -36,6 +36,8 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** e **Jetpack Com
 * 👉 Swipe para a direita para salvar um livro em **Quero Ler**
 * 👈 Swipe para a esquerda para descartar um livro ou removê-lo de **Quero Ler**
 * 💾 Persistência offline da lista **Quero Ler** com Room
+* 🙈 Livros salvos em **Quero Ler** não são repetidos na aba **Descobrir**
+* ✅ Estado **Quero Ler** sincronizado entre lista e detalhes
 * 🧭 Navegação inferior entre **Descobrir** e **Quero Ler**
 * ⚙️ Suporte a temas Light e Dark automáticos
 * 🔄 Tratamento de erros e estado de carregamento (loading, empty, error)
@@ -94,7 +96,9 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** e **Jetpack Com
 3. Use a barra de busca ou uma sugestão para encontrar livros.
 4. Na aba **Descobrir**, deslize para a direita para salvar em **Quero Ler** ou para a esquerda para descartar.
 5. Na aba **Quero Ler**, deslize para a esquerda para remover um livro da lista.
-6. Toque em um item para abrir seus detalhes.
+6. Toque em um item para abrir seus detalhes. O botão **Quero Ler** fica desativado quando o livro já está salvo.
+
+Os livros persistidos no Room são carregados antes da primeira busca. Por isso, um livro que já pertence à lista **Quero Ler** não é exibido novamente em **Descobrir**, inclusive durante a paginação.
 
 ---
 
@@ -106,6 +110,7 @@ O projeto segue o padrão **MVVM** (Model-View-ViewModel) organizado em camadas:
 
   * Models (DTOs e entidades Room)
   * Persistência local com DAO e banco Room
+  * Room como fonte de verdade da lista **Quero Ler**
   * Repositórios
   * Configuração do Retrofit / OkHttp
 * **commons**
@@ -211,11 +216,15 @@ iBooks/
 
 * **Unitários:**
 
-  * Localizados em `app/src/test/java/...
+  * Localizados em `app/src/test/java/`
+  * Cobrem eventos e erros da `BaseViewModel`
+  * Validam a filtragem dos livros persistidos na aba **Descobrir**
+  * Validam paginação após a filtragem do Room
+  * Validam o estado e o salvamento de **Quero Ler** nos detalhes
   * Execute com:
 
     ```bash
-    ./gradlew test
+    ./gradlew :app:testDebugUnitTest
     ```
 * **Instrumented (UI):**
 

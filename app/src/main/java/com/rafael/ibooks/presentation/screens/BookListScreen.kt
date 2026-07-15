@@ -36,6 +36,7 @@ import com.rafael.ibooks.R
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
 import com.rafael.ibooks.domain.Book
+import com.rafael.ibooks.presentation.state.DataState
 import com.rafael.ibooks.presentation.viewmodel.BookListViewModel
 import com.rafael.ibooks.ui.components.BookListBottomBar
 import com.rafael.ibooks.ui.components.BookTopAppBar
@@ -97,6 +98,19 @@ fun BookListScreen(
 
     LaunchedEffect(isAtBottom, selectedTab) {
         if (selectedTab == BookListTab.Discover && isAtBottom && !isLoading) {
+            viewModel.loadNextPage()
+        }
+    }
+
+    LaunchedEffect(screenState.dataState, isLoading, selectedTab) {
+        val dataState = screenState.dataState
+        if (
+            selectedTab == BookListTab.Discover &&
+            !isLoading &&
+            dataState is DataState.Success &&
+            dataState.data.isEmpty() &&
+            !dataState.endReached
+        ) {
             viewModel.loadNextPage()
         }
     }
