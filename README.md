@@ -23,15 +23,20 @@
 
 ## Sobre
 
-O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** usando **Jetpack Compose**, que permite buscar, navegar e visualizar detalhes de livros. A interface minimalista e a navegação fluida garantem uma experiência agradável tanto no modo light quanto dark.
+O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** e **Jetpack Compose** para descobrir, pesquisar e organizar livros. Além da busca pela Google Books API, o app oferece sugestões assistidas por IA, navegação por swipe e uma lista **Quero Ler** persistida offline.
 
 ---
 
 ## Funcionalidades
 
 * 🔍 Pesquisa de livros por título, autor ou ISBN
+* ✨ Sugestões de busca geradas com Gemini
 * 📚 Listagem de resultados com imagens de capa e informações essenciais
 * 📖 Tela de detalhe com descrição, avaliações e botão para abrir em loja
+* 👉 Swipe para a direita para salvar um livro em **Quero Ler**
+* 👈 Swipe para a esquerda para descartar um livro ou removê-lo de **Quero Ler**
+* 💾 Persistência offline da lista **Quero Ler** com Room
+* 🧭 Navegação inferior entre **Descobrir** e **Quero Ler**
 * ⚙️ Suporte a temas Light e Dark automáticos
 * 🔄 Tratamento de erros e estado de carregamento (loading, empty, error)
 * 🛠️ Injeção de dependências com Koin
@@ -54,9 +59,9 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** usando **Jetpac
 
 ## Requisitos
 
-* Android Studio Giraffe (ou superior)
-* SDK Android 33 (Android 13)
-* JDK 11+
+* Android Studio compatível com AGP 8.11+
+* SDK Android 36
+* JDK 17+
 * Conexão com internet para acessar API de livros
 
 ---
@@ -70,7 +75,15 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** usando **Jetpac
    ```
 2. Abra o projeto no Android Studio.
 3. Aguarde o download dos plugins e dependências via Gradle.
-4. Conecte um dispositivo físico ou configure um emulador com API 33+.
+4. Opcionalmente, adicione as chaves em `local.properties`:
+
+   ```properties
+   GOOGLE_BOOKS_API_KEY=sua_chave_google_books
+   GEMINI_API_KEY=sua_chave_gemini
+   ```
+
+   A chave do Google Books pode ficar vazia para consultas públicas, sujeitas às cotas da API. A chave Gemini é necessária para as sugestões com IA. Nunca versione o arquivo `local.properties`.
+5. Conecte um dispositivo físico ou configure um emulador compatível.
 
 ---
 
@@ -78,9 +91,10 @@ O **iBooks** é um aplicativo Android desenvolvido em **Kotlin** usando **Jetpac
 
 1. Execute a aplicação no Android Studio (Shift+F10 ou ▶️).
 2. Na tela inicial (Splash), aguarde o carregamento.
-3. Use a barra de busca para digitar o nome do livro, autor ou ISBN.
-4. Toque em um item da lista para ver detalhes.
-5. Na tela de detalhe, explore descrição e avaliações.
+3. Use a barra de busca ou uma sugestão para encontrar livros.
+4. Na aba **Descobrir**, deslize para a direita para salvar em **Quero Ler** ou para a esquerda para descartar.
+5. Na aba **Quero Ler**, deslize para a esquerda para remover um livro da lista.
+6. Toque em um item para abrir seus detalhes.
 
 ---
 
@@ -90,7 +104,8 @@ O projeto segue o padrão **MVVM** (Model-View-ViewModel) organizado em camadas:
 
 * **data**
 
-  * Models (DTOs, Entities)
+  * Models (DTOs e entidades Room)
+  * Persistência local com DAO e banco Room
   * Repositórios
   * Configuração do Retrofit / OkHttp
 * **commons**
@@ -114,14 +129,58 @@ O projeto segue o padrão **MVVM** (Model-View-ViewModel) organizado em camadas:
 
 ## Stack de Tecnologias
 
-* **Linguagem:** Kotlin
-* **UI:** Jetpack Compose
-* **Navegação:** Navigation Compose
-* **DI:** Koin
-* **HTTP:** Retrofit + OkHttp Logging
-* **JSON:** Gson
-* **Imagens:** Landscapist + Glide
-* **Testes:** JUnit, Espresso (instrumented)
+### 🧑‍💻 **Linguagem**
+- Kotlin (com suporte a Coroutines e Flow)
+
+### 🧱 **Arquitetura**
+- MVVM + Clean Architecture
+- Unidirectional Data Flow (UDF)
+
+### 🎨 **UI**
+- Jetpack Compose (com BOM)
+- Material 3 (Material You)
+- Compose Tooling & Preview
+- Compose Icons (Extended)
+
+### 🧭 **Navegação**
+- Navigation Compose
+
+### 💉 **Injeção de Dependência**
+- Koin (Core, Android, Compose)
+
+### 🌐 **Rede (HTTP)**
+- Retrofit
+- OkHttp Logging Interceptor
+
+### 🔁 **Serialização**
+- Gson (para JSON)
+
+### 💾 **Persistência local**
+- Room
+- KSP
+
+### 🖼️ **Imagens**
+- Landscapist + Glide (otimizado para Compose)
+
+### 🧪 **Testes**
+
+**Unitários:**
+- JUnit 4 & 5 (Jupiter)
+- Kotlin Test
+- MockK (incluindo agent)
+- Truth (assertions Google)
+- Turbine (para testar Flows)
+- Coroutines Test
+- Architecture Components Test (ViewModel etc.)
+
+**Instrumentados (Android):**
+- Espresso
+- Compose UI Test (JUnit4)
+- Compose Test Manifest
+
+**Debug Tools:**
+- Compose UI Tooling
+- Compose Preview
 
 ---
 
@@ -135,7 +194,8 @@ iBooks/
 │   │   │   ├── java/com/rafael/ibooks/
 │   │   │   │   ├── activity/      # MainActivity, Application
 │   │   │   │   ├── commons/       # BaseViewModel, eventos
-│   │   │   │   ├── data/          # Models, repositórios, API
+│   │   │   │   ├── data/          # API, banco Room, models e mappers
+│   │   │   │   ├── domain/        # Repositórios e casos de uso
 │   │   │   │   ├── di/            # Módulos Koin
 │   │   │   │   └── presentation/  # UI, navegação, ViewModels
 │   │   │   └── res/               # layouts Compose, resources

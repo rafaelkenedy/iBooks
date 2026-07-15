@@ -3,12 +3,8 @@ package com.rafael.ibooks.presentation.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,9 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,8 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
@@ -42,18 +36,11 @@ import com.rafael.ibooks.R
 import com.rafael.ibooks.commons.events.ErrorEvent
 import com.rafael.ibooks.commons.events.LoadingEvent
 import com.rafael.ibooks.domain.Book
-import com.rafael.ibooks.presentation.state.DataState
 import com.rafael.ibooks.presentation.viewmodel.BookListViewModel
-import com.rafael.ibooks.ui.components.BookList
-import com.rafael.ibooks.ui.components.BookSearchBar
+import com.rafael.ibooks.ui.components.BookListBottomBar
 import com.rafael.ibooks.ui.components.BookTopAppBar
-import com.rafael.ibooks.ui.components.DotLoadingIndicator
 import com.rafael.ibooks.ui.components.ErrorAlertDialog
-import com.rafael.ibooks.ui.components.GenreChips
-import com.rafael.ibooks.ui.components.LoadingIndicator
 import com.rafael.ibooks.ui.theme.IBooksTheme
-import com.rafael.ibooks.utils.GENRE_MAP
-import com.rafael.ibooks.utils.VERTICAL_FADE_BRUSH_SCREEN
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -76,6 +63,7 @@ fun BookListScreen(
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var selectedTab by rememberSaveable { mutableStateOf(BookListTab.Discover) }
 
     val initialTitle = stringResource(id = R.string.relevant_books_initial)
     val foundBooksTitle = stringResource(id = R.string.found_books)
@@ -107,8 +95,8 @@ fun BookListScreen(
         }
     }
 
-    LaunchedEffect(isAtBottom) {
-        if (isAtBottom && !isLoading) {
+    LaunchedEffect(isAtBottom, selectedTab) {
+        if (selectedTab == BookListTab.Discover && isAtBottom && !isLoading) {
             viewModel.loadNextPage()
         }
     }
@@ -135,6 +123,12 @@ fun BookListScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { BookTopAppBar() },
+        bottomBar = {
+            BookListBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+        },
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showScrollToTopButton,
@@ -164,88 +158,27 @@ fun BookListScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                BookSearchBar(
-                    query = screenState.searchText,
-                    onQueryChange = { newQuery ->
-                        viewModel.onQueryChange(newQuery)
-                        if (newQuery.isEmpty() && screenState.selectedGenre == null) {
-                            listTitle = initialTitle
-                        }
-                    },
-                    onSearch = {
-                        viewModel.onSearch()
-                        listTitle = foundBooksTitle
-                    },
-                    searchResults = screenState.suggestions,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                )
+                when (selectedTab) {
+                    BookListTab.Discover -> DiscoverBooksContent(
+                        screenState = screenState,
+                        isLoading = isLoading,
+                        listState = listState,
+                        listTitle = listTitle,
+                        onListTitleChange = { listTitle = it },
+                        onQueryChange = viewModel::onQueryChange,
+                        onSearch = viewModel::onSearch,
+                        onGenreSelected = viewModel::onGenreSelected,
+                        onBookClick = onBookClick,
+                        onBookSwipe = viewModel::onDiscoverBookSwipe
+                    )
 
-                GenreChips(
-                    genres = GENRE_MAP.keys.toList(),
-                    selectedGenre = screenState.selectedGenre,
-                    onGenreSelected = { genre ->
-                        viewModel.onGenreSelected(genre)
-                        listTitle = if (screenState.selectedGenre == genre) {
-                            initialTitle
-                        } else {
-                            genre
-                        }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = listTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                when {
-                    isLoading && (screenState.dataState as? DataState.Success)?.data.isNullOrEmpty() -> {
-                        LoadingIndicator()
-                    }
-
-                    screenState.dataState is DataState.Success -> {
-                        val books = (screenState.dataState as DataState.Success<List<Book>>).data
-
-                        if (books.isNotEmpty()) {
-                            BookList(
-                                books = books,
-                                onItemClick = onBookClick,
-                                listState = listState,
-                                bottomContent = if (isLoading) {
-                                    { DotLoadingIndicator() }
-                                } else {
-                                    null
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fadingEdge(VERTICAL_FADE_BRUSH_SCREEN)
-                            )
-                        } else if (!isLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(text = stringResource(R.string.empty_search_results))
-                            }
-                        }
-                    }
-
-                    screenState.dataState is DataState.Error -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.error),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    BookListTab.WantToRead -> WantToReadContent(
+                        books = screenState.wantToReadBooks,
+                        listState = listState,
+                        onBookClick = onBookClick,
+                        onRemoveBook = viewModel::onWantToReadBookRemoved,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }

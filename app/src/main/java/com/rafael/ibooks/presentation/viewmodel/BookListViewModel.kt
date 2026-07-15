@@ -4,8 +4,12 @@ import com.rafael.ibooks.commons.base.BaseViewModel
 import com.rafael.ibooks.domain.Book
 import com.rafael.ibooks.domain.usecase.GenerateBookTitlesUseCase
 import com.rafael.ibooks.domain.usecase.GetRecentBooksUseCase
+import com.rafael.ibooks.domain.usecase.ObserveWantToReadBooksUseCase
+import com.rafael.ibooks.domain.usecase.RemoveWantToReadBookUseCase
+import com.rafael.ibooks.domain.usecase.SaveWantToReadBookUseCase
 import com.rafael.ibooks.domain.usecase.SearchBooksUseCase
 import com.rafael.ibooks.presentation.state.DataState
+import com.rafael.ibooks.ui.components.BookSwipeAction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,15 +19,27 @@ class BookListViewModel(
     private val searchBooksUseCase: SearchBooksUseCase,
     private val getRecentBooksUseCase: GetRecentBooksUseCase,
     private val genreMap: Map<String, String>,
-    private val getSuggestions: GenerateBookTitlesUseCase
+    private val getSuggestions: GenerateBookTitlesUseCase,
+    private val observeWantToReadBooksUseCase: ObserveWantToReadBooksUseCase,
+    private val saveWantToReadBook: SaveWantToReadBookUseCase,
+    private val removeWantToReadBook: RemoveWantToReadBookUseCase
 ) : BaseViewModel() {
 
     private val _screenState = MutableStateFlow(BookListScreenState())
     val screenState: StateFlow<BookListScreenState> = _screenState.asStateFlow()
 
     init {
+        observeSavedBooks()
         searchBooks(query = null)
         loadSuggestions()
+    }
+
+    private fun observeSavedBooks() {
+        launch(loadingEvent = null) {
+            observeWantToReadBooksUseCase().collect { books ->
+                _screenState.update { it.copy(wantToReadBooks = books) }
+            }
+        }
     }
 
     private fun loadSuggestions() {
@@ -121,6 +137,45 @@ class BookListViewModel(
         }
     }
 
+    fun onBookDismissed(book: Book) {
+        removeBookFromCurrentResults(book)
+    }
+
+    fun onDiscoverBookSwipe(book: Book, action: BookSwipeAction) {
+        when (action) {
+            BookSwipeAction.SaveToWantToRead -> onBookSavedToWantToRead(book)
+            BookSwipeAction.Dismiss -> onBookDismissed(book)
+        }
+    }
+
+    fun onBookSavedToWantToRead(book: Book) {
+        launch(loadingEvent = null) {
+            saveWantToReadBook(book)
+        }
+        removeBookFromCurrentResults(book)
+    }
+
+    fun onWantToReadBookRemoved(book: Book) {
+        launch(loadingEvent = null) {
+            removeWantToReadBook(book)
+        }
+    }
+
+    private fun removeBookFromCurrentResults(book: Book) {
+        _screenState.update { state ->
+            val currentDataState = state.dataState
+            if (currentDataState is DataState.Success) {
+                state.copy(
+                    dataState = currentDataState.copy(
+                        data = currentDataState.data.filterNot { it.id == book.id }
+                    )
+                )
+            } else {
+                state
+            }
+        }
+    }
+
     private fun getQueryForNextPage(): String? {
         val state = _screenState.value
         return when {
@@ -155,5 +210,6 @@ data class BookListScreenState(
     val selectedGenre: String? = null,
     val searchText: String = "",
     val suggestions: List<String> = emptyList(),
-    val suggestionsLoading: Boolean = false
+    val suggestionsLoading: Boolean = false,
+    val wantToReadBooks: List<Book> = emptyList()
 )

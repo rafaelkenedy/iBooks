@@ -59,9 +59,11 @@ private fun provideOkHttpClient(apiKey: String): OkHttpClient {
     return OkHttpClient.Builder()
         .addInterceptor { chain ->
             val originalUrl = chain.request().url
-            val newUrl = originalUrl.newBuilder()
-                .addQueryParameter("key", apiKey)
-                .build()
+            val newUrlBuilder = originalUrl.newBuilder()
+            if (apiKey.isNotBlank()) {
+                newUrlBuilder.addQueryParameter("key", apiKey)
+            }
+            val newUrl = newUrlBuilder.build()
             val newRequest = chain.request().newBuilder()
                 .url(newUrl)
                 .build()
