@@ -27,17 +27,35 @@ class BookListViewModel(
 
     private val _screenState = MutableStateFlow(BookListScreenState())
     val screenState: StateFlow<BookListScreenState> = _screenState.asStateFlow()
+    private var wantToReadBookIds: Set<String> = emptySet()
+    private var nextPage = 0
+    private var initialBooksRequested = false
 
     init {
         observeSavedBooks()
-        searchBooks(query = null)
         loadSuggestions()
     }
 
     private fun observeSavedBooks() {
         launch(loadingEvent = null) {
             observeWantToReadBooksUseCase().collect { books ->
-                _screenState.update { it.copy(wantToReadBooks = books) }
+                wantToReadBookIds = books.mapTo(mutableSetOf()) { it.id }
+                _screenState.update { state ->
+                    val dataState = state.dataState
+                    state.copy(
+                        wantToReadBooks = books,
+                        dataState = if (dataState is DataState.Success) {
+                            dataState.copy(data = excludeWantToReadBooks(dataState.data))
+                        } else {
+                            dataState
+                        }
+                    )
+                }
+
+                if (!initialBooksRequested) {
+                    initialBooksRequested = true
+                    searchBooks(query = null)
+                }
             }
         }
     }
@@ -92,6 +110,7 @@ class BookListViewModel(
     }
 
     private fun searchBooks(query: String?) {
+        nextPage = 0
         _screenState.update { it.copy(dataState = null) }
 
         launch(
@@ -103,11 +122,13 @@ class BookListViewModel(
                 sendActionableErrorEvent(error, retryAction = { searchBooks(query) })
             }
         ) {
-            val books = fetchBooks(query = query, page = 0)
+            val fetchedBooks = fetchBooks(query = query, page = nextPage)
+            nextPage++
             _screenState.update {
                 it.copy(
                     dataState = DataState.Success(
-                        data = books, endReached = books.size < PAGE_SIZE
+                        data = excludeWantToReadBooks(fetchedBooks),
+                        endReached = fetchedBooks.size < PAGE_SIZE
                     )
                 )
             }
@@ -123,16 +144,24 @@ class BookListViewModel(
 
         launch(retryAction = { loadNextPage() }) {
             val queryForNextPage = getQueryForNextPage()
-            val currentPage = currentDataState.data.size / PAGE_SIZE
-            val newBooks = fetchBooks(query = queryForNextPage, page = currentPage)
+            val fetchedBooks = fetchBooks(query = queryForNextPage, page = nextPage)
+            nextPage++
+            val newBooks = excludeWantToReadBooks(fetchedBooks)
 
-            _screenState.update {
-                it.copy(
-                    dataState = currentDataState.copy(
-                        data = currentDataState.data + newBooks,
-                        endReached = newBooks.size < PAGE_SIZE
+            _screenState.update { state ->
+                val latestDataState = state.dataState
+                if (latestDataState is DataState.Success) {
+                    state.copy(
+                        dataState = latestDataState.copy(
+                            data = excludeWantToReadBooks(
+                                latestDataState.data + newBooks
+                            ).distinctBy { book -> book.id },
+                            endReached = fetchedBooks.size < PAGE_SIZE
+                        )
                     )
-                )
+                } else {
+                    state
+                }
             }
         }
     }
@@ -198,6 +227,10 @@ class BookListViewModel(
         } else {
             getRecentBooksUseCase(startIndex = startIndex, maxResults = PAGE_SIZE)
         }
+    }
+
+    private fun excludeWantToReadBooks(books: List<Book>): List<Book> {
+        return books.filterNot { it.id in wantToReadBookIds }
     }
 
     companion object {
